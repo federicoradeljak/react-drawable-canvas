@@ -59,8 +59,7 @@ const DrawableCanvas = React.createClass({
     },
     handleOnMouseDown(e){
         let rect = this.state.canvas.getBoundingClientRect();
-        this.state.context.beginPath();
-        if (this.isMobile()) {
+        if (e.targetTouches) {
             this.setState({
                 lastX: e.targetTouches[0].pageX - rect.left,
                 lastY: e.targetTouches[0].pageY - rect.top
@@ -72,20 +71,19 @@ const DrawableCanvas = React.createClass({
                 lastY: e.clientY - rect.top
             });
         }
-
+        this.startDrawing(this.state.lastX, this.state.lastY);
         this.setState({
             drawing: true
         });
     },
     handleOnMouseMove(e){
-
         if (this.state.drawing) {
             let rect = this.state.canvas.getBoundingClientRect();
             let lastX = this.state.lastX;
             let lastY = this.state.lastY;
             let currentX;
             let currentY;
-            if (this.isMobile()) {
+            if (e.targetTouches) {
                 currentX = e.targetTouches[0].pageX - rect.left;
                 currentY = e.targetTouches[0].pageY - rect.top;
             }
@@ -93,8 +91,6 @@ const DrawableCanvas = React.createClass({
                 currentX = e.clientX - rect.left;
                 currentY = e.clientY - rect.top;
             }
-
-
             this.draw(lastX, lastY, currentX, currentY);
             this.setState({
                 lastX: currentX,
@@ -103,27 +99,36 @@ const DrawableCanvas = React.createClass({
         }
     },
     handleonMouseUp(){
+        this.stopDrawing();
         this.setState({
             drawing: false
         });
     },
     draw(lX, lY, cX, cY){
-        this.state.context.strokeStyle = this.props.brushColor;
-        this.state.context.lineWidth = this.props.lineWidth;
-        this.state.context.moveTo(lX, lY);
         this.state.context.lineTo(cX, cY);
         this.state.context.stroke();
     },
     resetCanvas(){
         let width = this.state.context.canvas.width;
         let height = this.state.context.canvas.height;
-        this.state.context.clearRect(0, 0, width, height);
+        this.state.context.fillStyle = this.props.canvasStyle.backgroundColor;
+        this.state.context.fillRect(0, 0, width, height);
     },
     getCanvas() {
         return this.state.canvas;
     },
     getContext() {
         return this.state.context;
+    },
+    startDrawing(cX, cY) {
+        this.state.context.moveTo(cX, cY);
+        this.state.context.strokeStyle = this.props.brushColor;
+        this.state.context.lineWidth = this.props.lineWidth;
+        this.state.context.lineJoin = 'round';
+        this.state.context.beginPath();
+    },
+    stopDrawing() {
+        this.state.context.closePath();
     },
     getDefaultStyle(){
         return {
@@ -135,12 +140,6 @@ const DrawableCanvas = React.createClass({
         let defaults = this.getDefaultStyle();
         let custom = this.props.canvasStyle;
         return Object.assign({}, defaults, custom);
-    },
-    isMobile(){
-        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            return true;
-        }
-        return false;
     },
     render() {
         return (
