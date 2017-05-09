@@ -44,6 +44,9 @@ const DrawableCanvas = React.createClass({
 
         let ctx = canvas.getContext('2d');
 
+        ctx.fillStyle = this.props.canvasStyle.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
         this.setState({
             canvas: canvas,
             context: ctx
@@ -118,6 +121,9 @@ const DrawableCanvas = React.createClass({
     },
     getCanvas() {
         return this.state.canvas;
+    },
+    getContext() {
+        return this.state.context;
     },
     getDefaultStyle(){
         return {
